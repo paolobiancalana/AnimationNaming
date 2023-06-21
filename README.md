@@ -40,7 +40,7 @@ If you're using this package within Maya, you can launch the PySide2 dialog from
 import maya.OpenMayaUI as omui
 from PySide2 import QtWidgets
 from shiboken2 import wrapInstance
-from .gui_module import Dialog
+from gui_module import Dialog
 
 def maya_main_window():
     main_window_ptr = omui.MQtUtil.mainWindow()
