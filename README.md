@@ -37,17 +37,17 @@ To use the GUI, launch `gui_module.py`. This will open a dialog box with fields 
 If you're using this package within Maya, you can launch the PySide2 dialog from the Maya environment using the following code:
 
 ```python
-import maya.OpenMayaUI as omui
+import sys
+import importlib
+sys.path.insert(1, 'P:\\temp\\AnimationNaming')
+
 from PySide2 import QtWidgets
-from shiboken2 import wrapInstance
-from gui_module import Dialog
+import gui_module, animation_naming
+importlib.reload(gui_module)
+importlib.reload(animation_naming)
 
-def maya_main_window():
-    main_window_ptr = omui.MQtUtil.mainWindow()
-    return wrapInstance(int(main_window_ptr), QtWidgets.QWidget)
-
-dialog = Dialog(parent=maya_main_window())
-dialog.show()
+ui = gui_module.Dialog()
+ui.show()
 ```
 
 ## Note
