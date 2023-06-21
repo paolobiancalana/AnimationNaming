@@ -1,10 +1,21 @@
-from PySide2.QtWidgets import QDialog, QLabel, QLineEdit, QVBoxLayout, QPushButton
-from PySide2.QtCore import Qt
-from .animation_naming import AnimationNaming
+from PySide2.QtWidgets import QDialog, QLabel, QLineEdit, QVBoxLayout, QPushButton, QComboBox
+from PySide2.QtCore import QTimer
+import re
+from animation_naming import AnimationNaming
+import al1mayautils, naming
+
+
+class FetchingAsset():
+    def __init__(self):
+        self.nm = naming.Naming()
+
+    def get_asset(self):
+            data = {self.nm.parse(k).context['assetcode']:None for k in self.nm.search('dmvastcode')}
+            self.data = data
 
 class Dialog(QDialog):
     def __init__(self, parent=None):
-        super().__init__(parent)
+        super().__init__(parent or al1mayautils.maya_main_window())
         self.setWindowTitle("Animation Naming Tool")
         self.build_ui()
         self.init_connections()
@@ -12,6 +23,15 @@ class Dialog(QDialog):
     def build_ui(self):
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
+
+        self.assetLabel = QLabel("Asset:")
+        self.assetComboBox = QComboBox()
+        self.layout.addWidget(self.assetLabel)
+        self.layout.addWidget(self.assetComboBox)
+
+        self.fetch_assets()
+        for asset in self.assets:
+            self.assetComboBox.addItem(asset)
 
         self.actionLabel = QLabel("Action:")
         self.actionEdit = QLineEdit()
@@ -44,12 +64,31 @@ class Dialog(QDialog):
     def init_connections(self):
         self.submitButton.clicked.connect(self.submit)
 
+    def fetch_assets(self):
+        fetching_asset = FetchingAsset()
+        fetching_asset.get_asset()
+        self.assets = list(fetching_asset.data.keys())
+
     def submit(self):
+        asset = self.assetComboBox.currentText()
         action = self.actionEdit.text()
         direction = self.directionEdit.text() if self.directionEdit.text() != "" else None
         secondary_action = self.secondaryActionEdit.text() if self.secondaryActionEdit.text() != "" else None
-        variant = int(self.variantEdit.text()) if self.variantEdit.text() != "" else None
-        meters = int(self.metersEdit.text()) if self.metersEdit.text() != "" else None
-
+        variant = self.variantEdit.text() if self.variantEdit.text() != "" else None
+        if variant and variant.isdigit():
+            variant = int(variant)
+        elif variant is None:
+            pass
+        else:
+            QTimer.singleShot(0, lambda: self.variantEdit.clear())
+            self.variantEdit.setPlaceholderText("Please, insert a number. ex: 1 ")
+            return
+        meters = self.metersEdit.text() if self.metersEdit.text() != "" else None
+        if meters:
+            if not re.search(r',', meters):
+                QTimer.singleShot(0, lambda: self.metersEdit.clear())
+                self.metersEdit.setPlaceholderText("Please split with a comma. ex: 4,0 ")
+                return
         animation_naming = AnimationNaming(action, direction, secondary_action, variant, meters)
         print(animation_naming.create_name())
+
