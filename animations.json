@@ -1,0 +1,22 @@
+[
+    {
+        "action": "run",
+        "direction": "backward",
+        "variant": 2
+    },
+    {
+        "action": "jump",
+        "direction": "vertical",
+        "meters": {"x": 0, "y": 10}
+    },
+    {
+        "action": "attack",
+        "secondary_action": "heavy",
+        "variant": 3
+    },
+    {
+        "action": "crouch",
+        "direction": "left",
+        "variant": 1
+    }
+]
